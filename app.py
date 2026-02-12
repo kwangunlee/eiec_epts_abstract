@@ -114,43 +114,61 @@ with st.sidebar:
     model = st.selectbox("모델", ["gpt-4.1", "gpt-4o", "gpt-4o-mini"], index=0)
 
 # 입력 방식 선택
-input_mode = st.radio(
-    "입력 방식",
-    ["📎 파일 첨부 (여러 개 가능)", "📁 폴더에서 선택 (경로 입력)"],
-    horizontal=True,
+# input_mode = st.radio(
+#     "입력 방식",
+#     ["📎 파일 첨부 (여러 개 가능)", "📁 폴더에서 선택 (경로 입력)"],
+#     horizontal=True,
+# )
+
+st.subheader("📎 PDF 파일 업로드 (여러 개 가능)")
+
+uploaded = st.file_uploader(
+    "PDF 파일을 선택하세요 (다중 선택 가능)",
+    type=["pdf"],
+    accept_multiple_files=True,
 )
+
 
 pdf_items = []  # (파일명, bytes) 리스트
 
-if input_mode == "📎 파일 첨부 (여러 개 가능)":
-    uploaded = st.file_uploader(
-        "PDF 파일을 선택하세요 (다중 선택 가능)",
-        type=["pdf"],
-        accept_multiple_files=True,
-    )
-    if uploaded:
-        for f in uploaded:
-            pdf_items.append((f.name, f.read()))
+if uploaded:
+    for f in uploaded:
+        pdf_items.append((f.name, f.read()))
 
-else:
-    folder_path_input = st.text_input(
-        "폴더 경로를 입력하세요 (예: C:\\Users\\master\\Desktop\\pdf 또는 ./pdf)",
-        value="",
-        placeholder="C:\\Users\\master\\Desktop\\pdf 또는 ./pdf",
-    )
-    if folder_path_input:
-        folder_path = Path(folder_path_input)
-        if not folder_path.exists():
-            st.error(f"경로가 존재하지 않습니다: {folder_path_input}")
-        elif not folder_path.is_dir():
-            st.error(f"폴더가 아닙니다: {folder_path_input}")
-        else:
-            pdf_files = sorted([p for p in folder_path.iterdir() if p.suffix.lower() == ".pdf"])
-            if not pdf_files:
-                st.warning(f"'{folder_path_input}' 폴더에 PDF 파일이 없습니다.")
-            else:
-                pdf_items = [(p.name, None) for p in pdf_files]
-                st.success(f"총 {len(pdf_items)}개 PDF 파일을 찾았습니다.")
+if not pdf_items:
+    st.info("PDF 파일을 업로드하세요.")
+    st.stop()
+
+
+# if input_mode == "📎 파일 첨부 (여러 개 가능)":
+#     uploaded = st.file_uploader(
+#         "PDF 파일을 선택하세요 (다중 선택 가능)",
+#         type=["pdf"],
+#         accept_multiple_files=True,
+#     )
+#     if uploaded:
+#         for f in uploaded:
+#             pdf_items.append((f.name, f.read()))
+
+# else:
+#     folder_path_input = st.text_input(
+#         "폴더 경로를 입력하세요 (예: C:\\Users\\master\\Desktop\\pdf 또는 ./pdf)",
+#         value="",
+#         placeholder="C:\\Users\\master\\Desktop\\pdf 또는 ./pdf",
+#     )
+#     if folder_path_input:
+#         folder_path = Path(folder_path_input)
+#         if not folder_path.exists():
+#             st.error(f"경로가 존재하지 않습니다: {folder_path_input}")
+#         elif not folder_path.is_dir():
+#             st.error(f"폴더가 아닙니다: {folder_path_input}")
+#         else:
+#             pdf_files = sorted([p for p in folder_path.iterdir() if p.suffix.lower() == ".pdf"])
+#             if not pdf_files:
+#                 st.warning(f"'{folder_path_input}' 폴더에 PDF 파일이 없습니다.")
+#             else:
+#                 pdf_items = [(p.name, None) for p in pdf_files]
+#                 st.success(f"총 {len(pdf_items)}개 PDF 파일을 찾았습니다.")
 
 # 실행
 if not pdf_items:
@@ -295,4 +313,5 @@ st.download_button(
     mime="application/zip",
     key="dl_zip",
 )
+
 
