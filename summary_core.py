@@ -10,6 +10,7 @@ import io
 from pathlib import Path
 
 import fitz  # PyMuPDF
+import streamlit as st
 from openai import OpenAI
 
 
@@ -164,15 +165,18 @@ SYSTEM_RULES_EPTS = """
 """.strip()
 
 
-def get_client(api_key_path: str = "openai_api_key.txt") -> OpenAI:
-    """API 키 파일에서 읽어 OpenAI 클라이언트 반환."""
-    path = Path(api_key_path)
-    if not path.exists():
-        raise FileNotFoundError(f"API 키 파일을 찾을 수 없습니다: {api_key_path}")
-    with open(path, "r", encoding="utf-8") as f:
-        api_key = f.read().strip()
+# def get_client(api_key_path: str = "openai_api_key.txt") -> OpenAI:
+#     """API 키 파일에서 읽어 OpenAI 클라이언트 반환."""
+#     path = Path(api_key_path)
+#     if not path.exists():
+#         raise FileNotFoundError(f"API 키 파일을 찾을 수 없습니다: {api_key_path}")
+#     with open(path, "r", encoding="utf-8") as f:
+#         api_key = f.read().strip()
+#     return OpenAI(api_key=api_key)
+def get_client() -> OpenAI:
+    """Streamlit Secrets에서 API 키를 읽어 OpenAI 클라이언트 반환."""
+    api_key = st.secrets["OPENAI_API_KEY"]
     return OpenAI(api_key=api_key)
-
 
 def extract_text_from_pdf(pdf_path_or_bytes):
     """
@@ -456,4 +460,5 @@ def process_one_pdf_epts(
             "관리자 경로": "",
             "오류": str(e),
         }
+
 
