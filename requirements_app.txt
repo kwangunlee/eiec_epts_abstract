@@ -1,0 +1,4 @@
+# EPIC 초록 앱 실행에 필요한 패키지
+streamlit>=1.28.0
+PyMuPDF>=1.23.0
+openai>=1.0.0
