@@ -159,7 +159,8 @@ if not pdf_items:
 run_label = "🚀 초록 생성 실행"
 if st.button(run_label, type="primary"):
     try:
-        client = get_client(str(api_key_path))
+        client = get_client()
+        # client = get_client(str(api_key_path))
     except FileNotFoundError as e:
         st.error(str(e))
         st.stop()
@@ -294,3 +295,4 @@ st.download_button(
     mime="application/zip",
     key="dl_zip",
 )
+
