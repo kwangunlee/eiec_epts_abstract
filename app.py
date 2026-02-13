@@ -147,12 +147,12 @@ if not pdf_items:
 #         for f in uploaded:
 #             pdf_items.append((f.name, f.read()))
 
-else:
-    folder_path_input = st.text_input(
-        "폴더 경로를 입력하세요 (예: C:\\Users\\master\\Desktop\\pdf 또는 ./pdf)",
-        value="",
-        placeholder="C:\\Users\\master\\Desktop\\pdf 또는 ./pdf",
-    )
+# else:
+#     folder_path_input = st.text_input(
+#         "폴더 경로를 입력하세요 (예: C:\\Users\\master\\Desktop\\pdf 또는 ./pdf)",
+#         value="",
+#         placeholder="C:\\Users\\master\\Desktop\\pdf 또는 ./pdf",
+#     )
     if folder_path_input:
         folder_path = Path(folder_path_input)
         if not folder_path.exists():
@@ -166,7 +166,6 @@ else:
             else:
                 pdf_items = [(p.name, None) for p in pdf_files]
                 st.success(f"총 {len(pdf_items)}개 PDF 파일을 찾았습니다.")
-
 # 실행
 if not pdf_items:
     st.stop()
@@ -185,7 +184,13 @@ if st.button(run_label, type="primary"):
     total = len(pdf_items)
 
     for i, item in enumerate(pdf_items):
-        name, content = item
+        if task_mode == "EPIC 정부 보도자료 초록":
+           r = process_one_pdf(client, name, pdf_bytes, prompt=DEFAULT_PROMPT, model=model)
+        else:
+            r = process_one_pdf_epts(client, name, pdf_bytes, model=model)
+
+        results.append(r)
+        progress.progress((i + 1) / total, text=f"처리 중... ({i + 1}/{total})")
 
         # # 실제 PDF 바이츠 확보 (업로드 / 폴더 선택 공통 처리)
         # if input_mode == "📎 파일 첨부 (여러 개 가능)":
