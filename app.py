@@ -183,9 +183,9 @@ if st.button(run_label, type="primary"):
     progress = st.progress(0, text="처리 중...")
     total = len(pdf_items)
 
-    for i, item in enumerate(pdf_items):
+    for i, (name, pdf_bytes) in enumerate(pdf_items):
         if task_mode == "EPIC 정부 보도자료 초록":
-           r = process_one_pdf(client, name, pdf_bytes, prompt=DEFAULT_PROMPT, model=model)
+            r = process_one_pdf(client, name, pdf_bytes, prompt=DEFAULT_PROMPT, model=model)
         else:
             r = process_one_pdf_epts(client, name, pdf_bytes, model=model)
 
@@ -315,6 +315,7 @@ st.download_button(
     mime="application/zip",
     key="dl_zip",
 )
+
 
 
 
