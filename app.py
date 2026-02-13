@@ -114,11 +114,11 @@ with st.sidebar:
     model = st.selectbox("모델", ["gpt-4.1", "gpt-4o", "gpt-4o-mini"], index=0)
 
  입력 방식 선택
-input_mode = st.radio(
-    "입력 방식",
-    ["📎 파일 첨부 (여러 개 가능)", "📁 폴더에서 선택 (경로 입력)"],
-    horizontal=True,
-)
+# input_mode = st.radio(
+#     "입력 방식",
+#     ["📎 파일 첨부 (여러 개 가능)", "📁 폴더에서 선택 (경로 입력)"],
+#     horizontal=True,
+# )
 st.subheader("📎 PDF 파일 업로드 (여러 개 가능)")
 
 uploaded = st.file_uploader(
@@ -310,6 +310,7 @@ st.download_button(
     mime="application/zip",
     key="dl_zip",
 )
+
 
 
 
