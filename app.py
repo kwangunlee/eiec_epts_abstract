@@ -137,15 +137,15 @@ if not pdf_items:
     st.info("PDF 파일을 업로드하세요.")
     st.stop()
     
-if input_mode == "📎 파일 첨부 (여러 개 가능)":
-    uploaded = st.file_uploader(
-        "PDF 파일을 선택하세요 (다중 선택 가능)",
-        type=["pdf"],
-        accept_multiple_files=True,
-    )
-    if uploaded:
-        for f in uploaded:
-            pdf_items.append((f.name, f.read()))
+# if input_mode == "📎 파일 첨부 (여러 개 가능)":
+#     uploaded = st.file_uploader(
+#         "PDF 파일을 선택하세요 (다중 선택 가능)",
+#         type=["pdf"],
+#         accept_multiple_files=True,
+#     )
+#     if uploaded:
+#         for f in uploaded:
+#             pdf_items.append((f.name, f.read()))
 
 else:
     folder_path_input = st.text_input(
@@ -310,6 +310,7 @@ st.download_button(
     mime="application/zip",
     key="dl_zip",
 )
+
 
 
 
