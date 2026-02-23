@@ -262,7 +262,50 @@ for i, row in enumerate(results):
             
             # if row.get("관리자 경로"):
             #     st.link_button("관리자 경로 열기", row["관리자 경로"])
-        
+
+
+            # ------------------------------------
+            # 🔄 초록 재생성 버튼
+            # ------------------------------------
+            with col2:
+                if st.button("🔄 초록 재생성", key=f"regen_{i}"):
+
+                    with st.spinner("해당 파일 초록을 재생성 중..."):
+
+                        client = get_client()
+
+                        # 현재 파일 다시 처리
+                        pdf_bytes = None
+                        for name, content in pdf_items:
+                            if name == filename:
+                                pdf_bytes = content
+                                break
+
+                        if task_mode == "EPIC 정부 보도자료 초록":
+                            new_result = process_one_pdf(
+                                client,
+                                filename,
+                                pdf_bytes,
+                                prompt=DEFAULT_PROMPT,
+                                model=model
+                            )
+                        else:
+                            new_result = process_one_pdf_epts(
+                                client,
+                                filename,
+                                pdf_bytes,
+                                model=model
+                            )
+
+                        # 해당 index만 교체
+                        st.session_state["summary_results"][i] = new_result
+
+                        # 기존 편집 내용 삭제
+                        if edit_key in st.session_state:
+                            del st.session_state[edit_key]
+
+                        st.rerun()
+                        
         # 개별 txt 다운로드 (수정된 내용 반영)
         edit_key = f"summary_edit_{task_mode}_{i}"
         row_for_dl = {**row, "요약 결과": st.session_state.get(edit_key, row.get("요약 결과", ""))}
@@ -316,6 +359,7 @@ st.download_button(
     mime="application/zip",
     key="dl_zip",
 )
+
 
 
 
