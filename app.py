@@ -260,7 +260,7 @@ for i, row in enumerate(results):
                     st.warning("파일명에서 관리자 키 값을 찾을 수 없습니다.")
             
             with col2:
-                if st.button("🔄 초록 재생성", key=f"regen_{i}"):
+                if st.button("🔄 초록 재생성", key=f"regen_{task_mode}_{i}_{row['파일명']}"):
             
                     with st.spinner("해당 파일 초록을 재생성 중..."):
             
@@ -392,6 +392,7 @@ st.download_button(
     mime="application/zip",
     key="dl_zip",
 )
+
 
 
 
