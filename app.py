@@ -212,7 +212,10 @@ if st.session_state.get("results_task_mode") != task_mode:
 results = st.session_state["summary_results"]
 st.success(f"총 {len(results)}건 처리 완료.")
 
+
 # 결과 테이블 + 초록 확인(편집 가능) + txt 다운로드
+BASE_ADMIN_URL = "https://eiec.kdi.re.kr/aoslwj9584/epic/masterList.do"
+
 for i, row in enumerate(results):
     with st.expander(f"📄 {row['파일명']}" + (f" — 오류: {row['오류']}" if row.get("오류") else ""), expanded=(i == 0)):
         if row.get("오류"):
@@ -233,8 +236,33 @@ for i, row in enumerate(results):
                 disabled=False,
                 label_visibility="collapsed",
             )
-            if row.get("관리자 경로"):
-                st.link_button("관리자 경로 열기", row["관리자 경로"])
+
+
+            # ------------------------------------
+            # 🔎 관리자 경로 자동 생성 (파일명 기반)
+            # ------------------------------------
+            filename = row["파일명"]
+            match = re.search(r'\d+', filename)
+
+            if match:
+                key_value = match.group()
+
+                admin_url = (
+                    f"{BASE_ADMIN_URL}"
+                    f"?pg=1&pp=20"
+                    f"&skey=symbol"
+                    f"&svalue={key_value}"
+                    f"&sdatetp=reg&sdate="
+                )
+
+                st.link_button("🔎 관리자 경로 열기", admin_url)
+            else:
+                st.warning("파일명에서 관리자 키 값을 찾을 수 없습니다.")
+
+            
+            # if row.get("관리자 경로"):
+            #     st.link_button("관리자 경로 열기", row["관리자 경로"])
+        
         # 개별 txt 다운로드 (수정된 내용 반영)
         edit_key = f"summary_edit_{task_mode}_{i}"
         row_for_dl = {**row, "요약 결과": st.session_state.get(edit_key, row.get("요약 결과", ""))}
@@ -288,6 +316,7 @@ st.download_button(
     mime="application/zip",
     key="dl_zip",
 )
+
 
 
 
