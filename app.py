@@ -194,9 +194,18 @@ if st.button(run_label, type="primary"):
     st.session_state["results_task_mode"] = task_mode
     st.rerun()
 
-# 이전 실행 결과 표시
+
+# -------------------------------------------------
+# 🔵 세션 기본 초기화 추가
+# -------------------------------------------------
 if "summary_results" not in st.session_state:
-    st.stop()
+    st.session_state["summary_results"] = []
+
+if "regen_results" not in st.session_state:   # 🔵 수정
+    st.session_state["regen_results"] = {}
+
+if "pdf_items" not in st.session_state:      # 🔵 수정
+    st.session_state["pdf_items"] = []
 
 # 작업 유형이 일치하는지 확인 (다른 작업 유형의 결과가 남아있으면 무시)
 if st.session_state.get("results_task_mode") != task_mode:
@@ -452,6 +461,7 @@ st.download_button(
     mime="application/zip",
     key="dl_zip",
 )
+
 
 
 
