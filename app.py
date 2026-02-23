@@ -127,6 +127,23 @@ uploaded = st.file_uploader(
     accept_multiple_files=True,
 )
 
+## 중복 방지 기능 추가
+# 업로드 파일 변경 감지
+current_file_names = sorted([f.name for f in uploaded]) if uploaded else []
+
+if "last_uploaded_files" not in st.session_state:
+    st.session_state["last_uploaded_files"] = current_file_names
+
+# 업로드 목록이 이전과 다르면 결과 초기화
+if st.session_state["last_uploaded_files"] != current_file_names:
+    if "summary_results" in st.session_state:
+        del st.session_state["summary_results"]
+    for key in list(st.session_state.keys()):
+        if key.startswith("summary_edit_"):
+            del st.session_state[key]
+    st.session_state["last_uploaded_files"] = current_file_names
+####
+
 pdf_items = []  # (파일명, bytes) 리스트
 
 if uploaded:
@@ -137,22 +154,7 @@ if not pdf_items:
     st.info("PDF 파일을 업로드하세요.")
     st.stop()
     
-# if input_mode == "📎 파일 첨부 (여러 개 가능)":
-#     uploaded = st.file_uploader(
-#         "PDF 파일을 선택하세요 (다중 선택 가능)",
-#         type=["pdf"],
-#         accept_multiple_files=True,
-#     )
-#     if uploaded:
-#         for f in uploaded:
-#             pdf_items.append((f.name, f.read()))
 
-# else:
-#     folder_path_input = st.text_input(
-#         "폴더 경로를 입력하세요 (예: C:\\Users\\master\\Desktop\\pdf 또는 ./pdf)",
-#         value="",
-#         placeholder="C:\\Users\\master\\Desktop\\pdf 또는 ./pdf",
-#     )
     if folder_path_input:
         folder_path = Path(folder_path_input)
         if not folder_path.exists():
@@ -286,6 +288,7 @@ st.download_button(
     mime="application/zip",
     key="dl_zip",
 )
+
 
 
 
