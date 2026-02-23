@@ -288,10 +288,11 @@ for i, row in enumerate(results):
                                 model=model
                             )
             
+                        # summary_results 갱신
                         st.session_state["summary_results"][i] = new_result
             
-                        if edit_key in st.session_state:
-                            del st.session_state[edit_key]
+                        # 🔥 핵심: text_area 값도 직접 덮어쓰기
+                        st.session_state[edit_key] = new_result.get("요약 결과", "")
             
                         st.rerun()
 
@@ -352,6 +353,7 @@ st.download_button(
     mime="application/zip",
     key="dl_zip",
 )
+
 
 
 
