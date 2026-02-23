@@ -192,35 +192,6 @@ if st.button(run_label, type="primary"):
         results.append(r)
         progress.progress((i + 1) / total, text=f"처리 중... ({i + 1}/{total})")
 
-        # # 실제 PDF 바이츠 확보 (업로드 / 폴더 선택 공통 처리)
-        # if input_mode == "📎 파일 첨부 (여러 개 가능)":
-        #     pdf_bytes = content
-        # else:
-        #     # 폴더 모드: content가 None, 경로에서 읽음
-        #     folder_path = Path(folder_path_input)
-        #     pdf_path = folder_path / name
-        #     if not pdf_path.exists():
-        #         r = {
-        #             "파일명": name,
-        #             "텍스트파싱 결과": "",
-        #             "요약 결과": "",
-        #             "관리자 경로": "",
-        #             "오류": "파일 없음",
-        #         }
-        #         results.append(r)
-        #         progress.progress((i + 1) / total, text=f"처리 중... ({i + 1}/{total})")
-        #         continue
-        #     with open(pdf_path, "rb") as f:
-        #         pdf_bytes = f.read()
-
-        # 작업 유형에 따라 서로 다른 요약 로직 실행
-        if task_mode == "EPIC 정부 보도자료 초록":
-            r = process_one_pdf(client, name, pdf_bytes, prompt=DEFAULT_PROMPT, model=model)
-        else:  # ETPS 대책자료 초록
-            r = process_one_pdf_epts(client, name, pdf_bytes, model=model)
-        results.append(r)
-        progress.progress((i + 1) / total, text=f"처리 중... ({i + 1}/{total})")
-
     progress.empty()
     # 작업 유형과 함께 결과 저장 (작업 유형별로 분리)
     st.session_state["summary_results"] = results
@@ -315,6 +286,7 @@ st.download_button(
     mime="application/zip",
     key="dl_zip",
 )
+
 
 
 
