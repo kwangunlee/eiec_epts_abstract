@@ -213,7 +213,13 @@ results = st.session_state["summary_results"]
 st.success(f"총 {len(results)}건 처리 완료.")
 
 
+
 # 결과 테이블 + 초록 확인(편집 가능) + txt 다운로드
+
+# 🔵 추가: regen_counter 초기화 (루프 위쪽에 위치)
+if "regen_counter" not in st.session_state:
+    st.session_state["regen_counter"] = {}
+    
 BASE_ADMIN_URL = "https://eiec.kdi.re.kr/aoslwj9584/epic/masterList.do"
 
 for i, row in enumerate(results):
@@ -226,6 +232,13 @@ for i, row in enumerate(results):
             # 결과 길이에 맞춰 높이 설정 (최소 350px, 최대 700px)
             line_approx = max(1, len(abstract) // 40)
             area_height = min(700, max(350, 120 + line_approx * 22))
+
+            # 🔵 수정 시작
+            regen_ver = st.session_state["regen_counter"].get(i, 0)
+            edit_key = f"summary_edit_{task_mode}_{i}_{regen_ver}"
+            # 🔵 수정 끝
+
+            
             # 작업 유형별로 고유한 키 사용 (EPIC/ETPS 분리)
             edit_key = f"summary_edit_{task_mode}_{i}"
             edited = st.text_area(
@@ -287,13 +300,10 @@ for i, row in enumerate(results):
                                 pdf_bytes,
                                 model=model
                             )
-            
-                        # summary_results 갱신
+                        # 🔵 수정 시작
                         st.session_state["summary_results"][i] = new_result
-            
-                        # 🔥 핵심: text_area 값도 직접 덮어쓰기
-                        st.session_state[edit_key] = new_result.get("요약 결과", "")
-            
+                        st.session_state["regen_counter"][i] = regen_ver + 1
+                        # 🔵 수정 끝
                         st.rerun()
 
 
@@ -353,6 +363,7 @@ st.download_button(
     mime="application/zip",
     key="dl_zip",
 )
+
 
 
 
