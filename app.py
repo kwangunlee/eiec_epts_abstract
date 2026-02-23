@@ -113,12 +113,6 @@ with st.sidebar:
         api_key_path = Path(api_key_custom)
     model = st.selectbox("모델", ["gpt-4.1", "gpt-4o", "gpt-4o-mini"], index=0)
 
-# 입력 방식 선택
-# input_mode = st.radio(
-#     "입력 방식",
-#     ["📎 파일 첨부 (여러 개 가능)", "📁 폴더에서 선택 (경로 입력)"],
-#     horizontal=True,
-# )
 st.subheader("📎 PDF 파일 업로드 (여러 개 가능)")
 
 uploaded = st.file_uploader(
@@ -216,75 +210,65 @@ st.success(f"총 {len(results)}건 처리 완료.")
 
 # 결과 테이블 + 초록 확인(편집 가능) + txt 다운로드
 
-# 🔵 추가: regen_counter 초기화 (루프 위쪽에 위치)
-if "regen_counter" not in st.session_state:
-    st.session_state["regen_counter"] = {}
-    
+
+# 🔵 재생성 결과 저장용 초기화 (루프 위쪽에 추가)
+if "regen_results" not in st.session_state:
+    st.session_state["regen_results"] = {}
+
 BASE_ADMIN_URL = "https://eiec.kdi.re.kr/aoslwj9584/epic/masterList.do"
 
 for i, row in enumerate(results):
-    with st.expander(f"📄 {row['파일명']}" + (f" — 오류: {row['오류']}" if row.get("오류") else ""), expanded=(i == 0)):
+
+    with st.expander(
+        f"📄 {row['파일명']}" + (f" — 오류: {row['오류']}" if row.get("오류") else ""),
+        expanded=(i == 0)
+    ):
+
         if row.get("오류"):
             st.error(row["오류"])
         else:
-            st.markdown("**요약 결과 (초록)** — 아래에서 수정 후 다운로드하면 수정본이 저장됩니다.")
-            abstract = row.get("요약 결과", "")
-            # 결과 길이에 맞춰 높이 설정 (최소 350px, 최대 700px)
-            line_approx = max(1, len(abstract) // 40)
-            area_height = min(700, max(350, 120 + line_approx * 22))
+            st.markdown("### 📝 기존 초록")
 
-            # 🔵 수정 시작
-            regen_ver = st.session_state["regen_counter"].get(i, 0)
-            edit_key = f"summary_edit_{task_mode}_{i}_{regen_ver}"
-            # 🔵 수정 끝
+            original_abstract = row.get("요약 결과", "")
 
-            
-            # 작업 유형별로 고유한 키 사용 (EPIC/ETPS 분리)
-            edit_key = f"summary_edit_{task_mode}_{i}"
-            edited = st.text_area(
-                "초록",
-                value=abstract,
-                height=int(area_height),
-                key=edit_key,
+            st.text_area(
+                "기존 초록",
+                value=original_abstract,
+                height=350,
+                key=f"orig_{task_mode}_{i}",
                 disabled=False,
                 label_visibility="collapsed",
             )
-            
-            # ------------------------------------
-            # 🔎 관리자 경로 자동 생성 (파일명 기반)
-            # ------------------------------------
-            filename = row["파일명"]
 
+            filename = row["파일명"]
             col1, col2 = st.columns(2)
-            
+
+            # 관리자 링크
             with col1:
                 match = re.search(r'\d+', filename)
                 if match:
                     key_value = match.group()
                     admin_url = (
                         f"{BASE_ADMIN_URL}"
-                        f"?pg=1&pp=20"
-                        f"&skey=symbol"
-                        f"&svalue={key_value}"
-                        f"&sdatetp=reg&sdate="
+                        f"?pg=1&pp=20&skey=symbol"
+                        f"&svalue={key_value}&sdatetp=reg&sdate="
                     )
                     st.link_button("🔎 관리자 경로 열기", admin_url)
-                else:
-                    st.warning("파일명에서 관리자 키 값을 찾을 수 없습니다.")
-            
+
+            # 🔄 재생성 버튼
             with col2:
-                if st.button("🔄 초록 재생성", key=f"regen_{task_mode}_{i}_{row['파일명']}"):
-            
-                    with st.spinner("해당 파일 초록을 재생성 중..."):
-            
+                if st.button("🔄 초록 재생성", key=f"regen_btn_{task_mode}_{i}"):
+
+                    with st.spinner("재생성 중..."):
+
                         client = get_client()
-            
+
                         pdf_bytes = None
                         for name, content in pdf_items:
                             if name == filename:
                                 pdf_bytes = content
                                 break
-            
+
                         if task_mode == "EPIC 정부 보도자료 초록":
                             new_result = process_one_pdf(
                                 client,
@@ -300,11 +284,116 @@ for i, row in enumerate(results):
                                 pdf_bytes,
                                 model=model
                             )
-                        # 🔵 수정 시작
-                        st.session_state["summary_results"][i] = new_result
-                        st.session_state["regen_counter"][i] = regen_ver + 1
-                        # 🔵 수정 끝
+
+                        # 🔵 재생성 결과만 따로 저장
+                        st.session_state["regen_results"][i] = new_result.get("요약 결과", "")
+
                         st.rerun()
+
+            # 🔵 재생성 결과가 있으면 아래에 추가 표시
+            if i in st.session_state["regen_results"]:
+                st.markdown("---")
+                st.markdown("### 🔄 재생성 초록 (NEW)")
+
+                st.text_area(
+                    "재생성 초록",
+                    value=st.session_state["regen_results"][i],
+                    height=350,
+                    key=f"regen_text_{task_mode}_{i}",
+                    disabled=False,
+                    label_visibility="collapsed",
+                )
+
+
+# # 🔵 재생성 결과 저장용 초기화 (루프 위쪽에 추가)
+# if "regen_results" not in st.session_state:
+#     st.session_state["regen_results"] = {}
+    
+# BASE_ADMIN_URL = "https://eiec.kdi.re.kr/aoslwj9584/epic/masterList.do"
+
+# for i, row in enumerate(results):
+#     with st.expander(f"📄 {row['파일명']}" + (f" — 오류: {row['오류']}" if row.get("오류") else ""), expanded=(i == 0)):
+#         if row.get("오류"):
+#             st.error(row["오류"])
+#         else:
+#             st.markdown("**요약 결과 (초록)** — 아래에서 수정 후 다운로드하면 수정본이 저장됩니다.")
+#             abstract = row.get("요약 결과", "")
+#             # 결과 길이에 맞춰 높이 설정 (최소 350px, 최대 700px)
+#             line_approx = max(1, len(abstract) // 40)
+#             area_height = min(700, max(350, 120 + line_approx * 22))
+
+#             # 🔵 수정 시작
+#             regen_ver = st.session_state["regen_counter"].get(i, 0)
+#             edit_key = f"summary_edit_{task_mode}_{i}_{regen_ver}"
+#             # 🔵 수정 끝
+
+            
+#             # 작업 유형별로 고유한 키 사용 (EPIC/ETPS 분리)
+#             edit_key = f"summary_edit_{task_mode}_{i}"
+#             edited = st.text_area(
+#                 "초록",
+#                 value=abstract,
+#                 height=int(area_height),
+#                 key=edit_key,
+#                 disabled=False,
+#                 label_visibility="collapsed",
+#             )
+            
+#             # ------------------------------------
+#             # 🔎 관리자 경로 자동 생성 (파일명 기반)
+#             # ------------------------------------
+#             filename = row["파일명"]
+
+#             col1, col2 = st.columns(2)
+            
+#             with col1:
+#                 match = re.search(r'\d+', filename)
+#                 if match:
+#                     key_value = match.group()
+#                     admin_url = (
+#                         f"{BASE_ADMIN_URL}"
+#                         f"?pg=1&pp=20"
+#                         f"&skey=symbol"
+#                         f"&svalue={key_value}"
+#                         f"&sdatetp=reg&sdate="
+#                     )
+#                     st.link_button("🔎 관리자 경로 열기", admin_url)
+#                 else:
+#                     st.warning("파일명에서 관리자 키 값을 찾을 수 없습니다.")
+            
+#             with col2:
+#                 if st.button("🔄 초록 재생성", key=f"regen_{task_mode}_{i}_{row['파일명']}"):
+            
+#                     with st.spinner("해당 파일 초록을 재생성 중..."):
+            
+#                         client = get_client()
+            
+#                         pdf_bytes = None
+#                         for name, content in pdf_items:
+#                             if name == filename:
+#                                 pdf_bytes = content
+#                                 break
+            
+#                         if task_mode == "EPIC 정부 보도자료 초록":
+#                             new_result = process_one_pdf(
+#                                 client,
+#                                 filename,
+#                                 pdf_bytes,
+#                                 prompt=DEFAULT_PROMPT,
+#                                 model=model
+#                             )
+#                         else:
+#                             new_result = process_one_pdf_epts(
+#                                 client,
+#                                 filename,
+#                                 pdf_bytes,
+#                                 model=model
+#                             )
+#                         # 🔵 수정 시작
+#                         st.session_state["summary_results"][i] = new_result
+#                         st.session_state["regen_counter"][i] = regen_ver + 1
+#                         # 🔵 수정 끝
+#                         st.rerun()
 
 
             
@@ -363,6 +452,7 @@ st.download_button(
     mime="application/zip",
     key="dl_zip",
 )
+
 
 
 
