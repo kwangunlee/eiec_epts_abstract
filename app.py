@@ -254,15 +254,18 @@ for i, row in enumerate(results):
 
             # 관리자 링크
             with col1:
-                match = re.search(r'\d+', filename)
-                if match:
-                    key_value = match.group()
-                    admin_url = (
-                        f"{BASE_ADMIN_URL}"
-                        f"?pg=1&pp=20&skey=symbol"
-                        f"&svalue={key_value}&sdatetp=reg&sdate="
-                    )
-                    st.link_button("🔎 관리자 경로 열기", admin_url)
+                # EPIC 보도자료 초록일 때만 관리자 링크 표시
+                if task_mode == "EPIC 정부 보도자료 초록":
+                    
+                    match = re.search(r'\d+', filename)
+                    if match:
+                        key_value = match.group()
+                        admin_url = (
+                            f"{BASE_ADMIN_URL}"
+                            f"?skey=symbol"
+                            f"&svalue={key_value}&sdatetp=reg&sdate="
+                        )
+                        st.link_button("🔎 관리자 경로 열기", admin_url)
 
             # 🔄 재생성 버튼
             with col2:
@@ -461,6 +464,7 @@ st.download_button(
     mime="application/zip",
     key="dl_zip",
 )
+
 
 
 
