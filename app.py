@@ -266,6 +266,17 @@ for i, row in enumerate(results):
                             f"&svalue={key_value}&sdatetp=reg&sdate="
                         )
                         st.link_button("🔎 관리자 경로 열기", admin_url)
+                        
+                elif task_mode == "ETPS 대책자료 초록":
+                    
+                    match = re.search(r'\d+', filename)
+                    if match:
+                        key_value = match.group()
+                        admin_url = (
+                            f"https://epts.kdi.re.kr/kdicms/cte/cteManage/view"
+                            
+                        )
+                        st.link_button("🔎 관리자 경로 열기", admin_url)
 
             # 🔄 재생성 버튼
             with col2:
@@ -464,6 +475,7 @@ st.download_button(
     mime="application/zip",
     key="dl_zip",
 )
+
 
 
 
