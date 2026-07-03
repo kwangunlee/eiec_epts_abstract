@@ -70,6 +70,21 @@ DEFAULT_PROMPT = """
 보도자료는 다음과 같습니다:
 """
 
+# TODO: 직접 작성 - 아래 두 프롬프트를 원하는 내용으로 채워 넣으세요.
+PROMPT_2 = """
+"""
+
+PROMPT_3 = """
+"""
+
+# EPIC 정부 보도자료 초록 모드에서 선택·테스트할 프롬프트 목록
+# (선택 UI/미리보기는 app.py에서 이 딕셔너리를 그대로 사용)
+EPIC_PROMPTS: dict[str, str] = {
+    "프롬프트 1 (기본)": DEFAULT_PROMPT,
+    "프롬프트 2": PROMPT_2,
+    "프롬프트 3": PROMPT_3,
+}
+
 # EPTS 대책자료용 시스템 규칙 (main_notebook_EPTS_rev_0210.ipynb의 SYSTEM_RULES)
 SYSTEM_RULES_EPTS = """
 
