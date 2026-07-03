@@ -137,9 +137,9 @@ with st.sidebar:
 
 # 실제 생성에 사용할 프롬프트 (EPIC 모드가 아니면 사용되지 않음)
 selected_epic_prompt_text = (
-    EPIC_PROMPTS.get(selected_epic_prompt_label, DEFAULT_PROMPT)
+    EPIC_PROMPTS.get(selected_epic_prompt_label, PROMPT_4)
     if task_mode == "EPIC 정부 보도자료 초록"
-    else DEFAULT_PROMPT
+    else PROMPT_4
 )
 
 # 선택한 프롬프트가 바뀌면 이전 결과 초기화 (다른 프롬프트로 다시 테스트할 수 있도록)
