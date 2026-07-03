@@ -137,7 +137,7 @@ with st.sidebar:
 
 # 실제 생성에 사용할 프롬프트 (EPIC 모드가 아니면 사용되지 않음)
 selected_epic_prompt_text = (
-    DEFAULT_PROMPT.get(selected_epic_prompt_label, DEFAULT_PROMPT)
+    EPIC_PROMPTS.get(selected_epic_prompt_label, DEFAULT_PROMPT)
     if task_mode == "EPIC 정부 보도자료 초록"
     else DEFAULT_PROMPT
 )
