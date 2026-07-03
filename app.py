@@ -14,6 +14,7 @@ import streamlit as st
 from summary_core import (
     get_client,
     DEFAULT_PROMPT,
+    EPIC_PROMPTS,
     process_one_pdf,
     process_pdfs_from_folder,
     process_one_pdf_epts,
@@ -113,6 +114,47 @@ with st.sidebar:
         api_key_path = Path(api_key_custom)
     model = st.selectbox("모델", ["gpt-4.1", "gpt-4o", "gpt-4o-mini"], index=0)
 
+    # EPIC 정부 보도자료 초록 모드에서만 프롬프트 선택/확인 가능
+    selected_epic_prompt_label = None
+    if task_mode == "EPIC 정부 보도자료 초록":
+        st.markdown("---")
+        st.subheader("프롬프트 선택 (EPIC)")
+        selected_epic_prompt_label = st.selectbox(
+            "테스트할 프롬프트",
+            list(EPIC_PROMPTS.keys()),
+            index=0,
+            key="epic_prompt_select",
+        )
+        with st.expander("📄 선택한 프롬프트 확인 (읽기전용)", expanded=False):
+            st.text_area(
+                "프롬프트 내용",
+                value=EPIC_PROMPTS[selected_epic_prompt_label],
+                height=300,
+                disabled=True,
+                label_visibility="collapsed",
+                key="epic_prompt_preview",
+            )
+
+# 실제 생성에 사용할 프롬프트 (EPIC 모드가 아니면 사용되지 않음)
+selected_epic_prompt_text = (
+    EPIC_PROMPTS.get(selected_epic_prompt_label, DEFAULT_PROMPT)
+    if task_mode == "EPIC 정부 보도자료 초록"
+    else DEFAULT_PROMPT
+)
+
+# 선택한 프롬프트가 바뀌면 이전 결과 초기화 (다른 프롬프트로 다시 테스트할 수 있도록)
+if "last_epic_prompt_label" not in st.session_state:
+    st.session_state["last_epic_prompt_label"] = selected_epic_prompt_label
+elif st.session_state["last_epic_prompt_label"] != selected_epic_prompt_label:
+    if "summary_results" in st.session_state:
+        del st.session_state["summary_results"]
+    if "regen_results" in st.session_state:
+        st.session_state["regen_results"] = {}
+    for key in list(st.session_state.keys()):
+        if key.startswith("summary_edit_"):
+            del st.session_state[key]
+    st.session_state["last_epic_prompt_label"] = selected_epic_prompt_label
+
 st.subheader("📎 PDF 파일 업로드 (여러 개 가능)")
 
 uploaded = st.file_uploader(
@@ -181,7 +223,7 @@ if st.button(run_label, type="primary"):
 
     for i, (name, pdf_bytes) in enumerate(pdf_items):
         if task_mode == "EPIC 정부 보도자료 초록":
-            r = process_one_pdf(client, name, pdf_bytes, prompt=DEFAULT_PROMPT, model=model)
+            r = process_one_pdf(client, name, pdf_bytes, prompt=selected_epic_prompt_text, model=model)
         else:
             r = process_one_pdf_epts(client, name, pdf_bytes, model=model)
 
@@ -192,6 +234,7 @@ if st.button(run_label, type="primary"):
     # 작업 유형과 함께 결과 저장 (작업 유형별로 분리)
     st.session_state["summary_results"] = results
     st.session_state["results_task_mode"] = task_mode
+    st.session_state["results_epic_prompt_label"] = selected_epic_prompt_label
     st.rerun()
 
 
@@ -213,7 +256,11 @@ if st.session_state.get("results_task_mode") != task_mode:
     st.stop()
 
 results = st.session_state["summary_results"]
-st.success(f"총 {len(results)}건 처리 완료.")
+used_prompt_label = st.session_state.get("results_epic_prompt_label")
+if task_mode == "EPIC 정부 보도자료 초록" and used_prompt_label:
+    st.success(f"총 {len(results)}건 처리 완료. (사용한 프롬프트: {used_prompt_label})")
+else:
+    st.success(f"총 {len(results)}건 처리 완료.")
 
 
 
@@ -297,7 +344,7 @@ for i, row in enumerate(results):
                                 client,
                                 filename,
                                 pdf_bytes,
-                                prompt=DEFAULT_PROMPT,
+                                prompt=selected_epic_prompt_text,
                                 model=model
                             )
                         else:
