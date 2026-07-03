@@ -54,7 +54,7 @@ def extract_title_from_summary(summary: str, task_mode: str) -> str:
         lines = summary.split('\n')
         first_line = lines[0].strip() if lines else ""
         if first_line:
-            # "A(부처)는 MM.DD.(day) ~~한다고 밝혔다" 형식에서 주요 내용 추출
+            # "A(부처)는 MM.DD.(day) ~~다" 형식에서 주요 내용 추출
             match = re.search(r'는\s+[0-9.]+\([^)]+\)\s+(.+?)(?:라고|한다고|했다고)', first_line)
             if match:
                 title = match.group(1).strip()
