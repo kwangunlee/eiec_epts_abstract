@@ -112,7 +112,8 @@ with st.sidebar:
     )
     if api_key_custom:
         api_key_path = Path(api_key_custom)
-    model = st.selectbox("모델", ["gpt-4.1", "gpt-4o", "gpt-4o-mini"], index=0)
+    model = st.selectbox("모델", ["gpt-4.1", "gpt-4o", "gpt-4o-mini", "GPT-5.6 Sol (플래그십, 기본)"], index=0)
+
 
     # EPIC 정부 보도자료 초록 모드에서만 프롬프트 선택/확인 가능
     selected_epic_prompt_label = None
